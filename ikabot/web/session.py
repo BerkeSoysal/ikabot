@@ -20,6 +20,7 @@ from ikabot.helpers.aesCipher import *
 from ikabot.helpers.pedirInfo import read
 from ikabot.helpers.getJson import getCity
 from urllib3.exceptions import InsecureRequestWarning
+from os.path import exists
 
 t = gettext.translation('session', localedir, languages=languages, fallback=True)
 _ = t.gettext
@@ -98,7 +99,12 @@ class Session:
 
     def __login(self, retries=0):
         self.__log('__login()')
-        if not self.logged:
+        if(exists('userCredentials.txt')):
+            f = open("userCredentials.txt")
+            credentials = f.read().split()
+            self.mail = credentials[0]
+            self.password = credentials[1]
+        elif not self.logged:
             banner()
 
             self.mail = read(msg=_('Mail:'))
@@ -107,6 +113,12 @@ class Session:
                 self.password = config.predetermined_input.pop(0)
             else:
                 self.password = getpass.getpass(_('Password:'))
+
+            self.rememberMe = read(msg=_("Remember me?: (y/n)"))
+
+            if(self.rememberMe == 'y'):
+                f = open('userCredentials.txt', 'w')
+                f.write(self.mail + " " + self.password)
 
             banner()
 
